@@ -11,11 +11,27 @@ use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
 {
-    public function index($type, $action){
+    public function index($type, $action, Request $request){
         $page_data['type'] = $type;
-        $page_data['users'] = User::where('type', $type)->get();
+
+        // Query builder for users
+        $query = User::where('type', $type)->orderBy('id', 'desc');
+
+        // Add search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        // Use pagination instead of get()
+        $page_data['users'] = $query->paginate(20);
+
         if($action == 'all'){
-            return view('admin.user.index', $page_data); 
+            return view('admin.user.index', $page_data);
         }elseif($action == 'add'){
             return view('admin.user.create', $page_data);
         }
