@@ -8,4 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Blog extends Model
 {
     use HasFactory;
+
+    /**
+     * Get the category that owns the blog.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Blog_category::class, 'category', 'id');
+    }
+
+    /**
+     * Get the user that owns the blog.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

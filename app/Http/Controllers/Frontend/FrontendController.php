@@ -41,37 +41,47 @@ use DB;
 class FrontendController extends Controller
 {
     public function index(){
-   
-        $page_data['beautyListing'] = BeautyListing::where('visibility','visible')->get();
-        $page_data['restaurantListing'] = RestaurantListing::where('visibility','visible')->get();
-        $page_data['realEstateListing'] = RealEstateListing::where('visibility','visible')->get();
-        $page_data['hotelListing'] = HotelListing::where('visibility','visible')->get();
-        $page_data['carListing'] = CarListing::where('visibility','visible')->get();
-        $page_data['categories'] = Category::all();
-        $page_data['reviews'] = Review::whereNull('reply_id')->where('rating',5)->orderBy('created_at', 'DESC')->take(50)->get();
-        $page_data['blogs'] = Blog::where('status', 1)->where('is_popular', 1)->orderBy('created_at', 'desc')->take(3)->get();
 
-        // New
-         $page_data['Totalhotels'] = HotelListing::where('visibility','visible')->take(8)->get();
-         $page_data['Totalrestaurant'] = RestaurantListing::where('visibility','visible')->take(8)->get();
-         $page_data['Totalbeauty'] = BeautyListing::where('visibility','visible')->take(8)->get();
-         $page_data['TotalrealEstate'] = RealEstateListing::where('visibility','visible')->take(8)->get();
-         $page_data['Totalcar'] = CarListing::where('visibility','visible')->take(8)->get();
-         
-         // Regions for homepage slider
-         $page_data['regions'] = Region::active()->ordered()->get();
-         
-         // Team members for homepage slider
-         $page_data['teamMembers'] = TeamMember::active()->ordered()->get();
-         
-         // Gallery items grouped by category for homepage
-         $page_data['galleryCategories'] = \App\Models\Gallery::getCategories();
-         $page_data['galleries'] = \App\Models\Gallery::active()
-                                    ->orderBy('sort_order', 'asc')
-                                    ->orderBy('created_at', 'desc')
-                                    ->get()
-                                    ->groupBy('category');
-        // New
+        // Optimized: Use take() to limit results and avoid loading all data
+        $page_data['beautyListing'] = BeautyListing::where('visibility','visible')->take(8)->get();
+        $page_data['restaurantListing'] = RestaurantListing::where('visibility','visible')->take(8)->get();
+        $page_data['realEstateListing'] = RealEstateListing::where('visibility','visible')->take(8)->get();
+        $page_data['hotelListing'] = HotelListing::where('visibility','visible')->take(8)->get();
+        $page_data['carListing'] = CarListing::where('visibility','visible')->take(8)->get();
+        $page_data['categories'] = Category::all();
+        $page_data['reviews'] = Review::whereNull('reply_id')->where('rating',5)->orderBy('created_at', 'DESC')->take(10)->get();
+
+        // CRITICAL FIX: Use eager loading to prevent N+1 query problem
+        // Without eager loading, each blog will trigger 2 additional queries (category + user)
+        $page_data['blogs'] = Blog::with(['category:id,name', 'user:id,name,image'])
+                                   ->where('status', 1)
+                                   ->where('is_popular', 1)
+                                   ->orderBy('created_at', 'desc')
+                                   ->take(3)
+                                   ->get();
+
+        // Removed duplicate queries - use the same variables from above
+        $page_data['Totalhotels'] = $page_data['hotelListing'];
+        $page_data['Totalrestaurant'] = $page_data['restaurantListing'];
+        $page_data['Totalbeauty'] = $page_data['beautyListing'];
+        $page_data['TotalrealEstate'] = $page_data['realEstateListing'];
+        $page_data['Totalcar'] = $page_data['carListing'];
+
+        // Regions for homepage slider
+        $page_data['regions'] = Region::active()->ordered()->get();
+
+        // Team members for homepage slider
+        $page_data['teamMembers'] = TeamMember::active()->ordered()->take(10)->get();
+
+        // Gallery items grouped by category for homepage
+        $page_data['galleryCategories'] = \App\Models\Gallery::getCategories();
+        $page_data['galleries'] = \App\Models\Gallery::active()
+                                   ->orderBy('sort_order', 'asc')
+                                   ->orderBy('created_at', 'desc')
+                                   ->take(50)
+                                   ->get()
+                                   ->groupBy('category');
+
         return view('frontend.index',$page_data);
     }
 

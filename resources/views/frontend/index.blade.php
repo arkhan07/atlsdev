@@ -662,18 +662,14 @@
             <div class="row mb-100px g-4">
                 @if (count($blogs) > 0)
                     @foreach ($blogs as $blog)
-                        @php
-                            $category_name = App\Models\Blog_category::where('id', $blog->category)->first();
-                            $usersBlog = App\Models\User::where('id', $blog->user_id)->first();
-                        @endphp
                         <div class="col-lg-4 col-md-6">
                             <a href="{{ route('blog.details', ['id' => $blog->id, 'slug' => slugify($blog->title)]) }}" class="mh-blog-link max-w-md-450px mx-auto">
                                 <div class="mh-blog-card">
                                     <div class="mh-blog-card-image">
-                                        <img src="{{ get_all_image('blog-images/' . $blog->image) }}" alt="">
+                                        <img src="{{ get_all_image('blog-images/' . $blog->image) }}" alt="{{ $blog->title }}">
                                     </div>
                                     <div class="p-20px">
-                                        <p class="at-category-badge mb-12px">{{ $category_name->name }}</p>
+                                        <p class="at-category-badge mb-12px">{{ $blog->category->name ?? 'Uncategorized' }}</p>
                                         <div class="mh-blog-titles mb-2 pb-3">
                                             <h4 class="in-title-20px fw-semibold at-text-dark mb-12px">{{ $blog->title }}</h4>
                                             <p class="in-subtitle-16px at-text-secondary">
@@ -683,15 +679,15 @@
                                         <div class="d-flex align-items-center justify-content-between mt-3 gap-3">
                                             <div class="d-flex align-items-center gap-10px">
                                                 <div class="image-circle-40px">
-                                                    <img src="{{ get_all_image('users/' . $usersBlog['image']) }}" alt="">
+                                                    <img src="{{ get_all_image('users/' . $blog->user->image) }}" alt="{{ $blog->user->name }}">
                                                 </div>
                                                 <div>
-                                                    <h6 class="in-title-16px at-text-dark mb-2">{{ $usersBlog->name }}</h6>
-                                                    <p class="in-subtitle-14px lh-1 fw-medium at-text-secondary">{{ \Carbon\Carbon::parse($blog->created_at)->format('F j, Y ') }}</p>
+                                                    <h6 class="in-title-16px at-text-dark mb-2">{{ $blog->user->name }}</h6>
+                                                    <p class="in-subtitle-14px lh-1 fw-medium at-text-secondary">{{ \Carbon\Carbon::parse($blog->created_at)->format('F j, Y') }}</p>
                                                 </div>
                                             </div>
                                             <div class="mh-blog-arrow">
-                                                <img src="{{asset('image/1.svg')}}" alt="">
+                                                <img src="{{asset('image/1.svg')}}" alt="Read more">
                                             </div>
                                         </div>
                                     </div>
