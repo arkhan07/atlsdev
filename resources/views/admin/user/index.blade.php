@@ -18,9 +18,40 @@
         </div>
     </div>
 
+    <!-- Filter Section -->
     <div class="ol-card mt-3">
         <div class="ol-card-body p-3">
-            @if (count($users))
+            <form method="GET" action="{{ route('admin.user', ['type' => $type, 'action' => 'all']) }}" class="row g-3">
+                <div class="col-md-3">
+                    <select name="status" class="ol-select2" data-minimum-results-for-search="Infinity" onchange="this.form.submit()">
+                        <option value="">{{get_phrase('All Status')}}</option>
+                        <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>
+                            {{ get_phrase('Active') }}
+                        </option>
+                        <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>
+                            {{ get_phrase('Inactive') }}
+                        </option>
+                        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>
+                            {{ get_phrase('Blocked') }}
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <input type="text" name="search" class="form-control ol-form-control"
+                           placeholder="{{get_phrase('Search by name, email, or phone...')}}"
+                           value="{{ request('search') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn ol-btn-primary">{{get_phrase('Filter')}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="ol-card mt-3">
+        <div class="ol-card-body p-3">
+            @if(count($users) > 0)
                 <table id="datatable" class="table nowrap w-100">
                     <thead>
                         <tr>
@@ -33,9 +64,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($users as $key => $user)
+                        @foreach ($users as $user)
                             <tr>
-                                <td> {{ $users->firstItem() + $key }} </td>
+                                <td> {{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }} </td>
                                 <td> <img src="{{ get_user_image('users/' . $user->image) }}" class="rounded" height="50px" width="50px" alt=""></td>
                                 <td> {{ $user->name }} </td>
                                 <td> {{ $user->email }} </td>

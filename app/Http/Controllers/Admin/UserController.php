@@ -17,6 +17,11 @@ class UserController extends Controller
         // Query builder for users
         $query = User::where('type', $type)->orderBy('id', 'desc');
 
+        // Add status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
         // Add search functionality
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
